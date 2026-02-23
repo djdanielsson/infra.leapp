@@ -12,12 +12,6 @@ permissions:
   # This is required for the ability to create/update the Pull request status
   statuses: write
 jobs:
-  debug_event:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dump github context
-        run: echo '${{ toJson(github) }}'
-
   prepare_vars:
     name: Get info from role and PR to determine if and how to test
     # The concurrency key is used to prevent multiple workflows from running at the same time
@@ -44,7 +38,7 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
 
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Get head sha of the PR
         id: head_sha
@@ -57,21 +51,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout PR
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.head_sha.outputs.head_sha }}
 
-
       - name: Get supported platforms
         id: supported_platforms
-
         run: |
           supported_platforms=""
           meta_main=meta/main.yml
           # All Fedora are supported, add latest Fedora versions to supported_platforms
           if yq '.galaxy_info.galaxy_tags[]' "$meta_main" | grep -qi fedora$; then
-            supported_platforms+=" Fedora-41"
             supported_platforms+=" Fedora-42"
+            supported_platforms+=" Fedora-43"
           fi
           # Specific Fedora versions supported
           if yq '.galaxy_info.galaxy_tags[]' "$meta_main" | grep -qiP 'fedora\d+$'; then
